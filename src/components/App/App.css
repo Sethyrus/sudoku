@@ -1,0 +1,14 @@
+.app-container {
+  width: 100%;
+  height: 100%;
+  background: #006ac0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
