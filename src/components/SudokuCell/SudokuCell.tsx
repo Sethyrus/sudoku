@@ -13,7 +13,7 @@ const SudokuCell = (props: SudokuCellProps) => {
     >
       {props.cellData.default ? (
         <p className="default-value">{props.cellData.value}</p>
-      ) : (
+      ) : props.cellData.value || props.cellData.provValues.length === 0 ? (
         <input
           id={props.position.x + "-" + props.position.y}
           type="number"
@@ -27,6 +27,7 @@ const SudokuCell = (props: SudokuCellProps) => {
               e.key !== "ArrowLeft" &&
               e.key !== "Backspace" &&
               e.key !== "Tab" &&
+              e.key !== "F12" &&
               !(parseInt(e.key) > 0 && parseInt(e.key) < 10)
             ) {
               e.preventDefault();
@@ -65,6 +66,12 @@ const SudokuCell = (props: SudokuCellProps) => {
             }
           }}
         />
+      ) : (
+        <p className="prov-values">
+          {props.cellData.provValues.map((provValue) => (
+            <span>{provValue}</span>
+          ))}
+        </p>
       )}
     </div>
   );

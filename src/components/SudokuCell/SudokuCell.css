@@ -35,6 +35,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  border-radius: 0;
 }
 
 .sudoku-cell input::-webkit-outer-spin-button,
@@ -49,4 +50,20 @@
 
 .sudoku-cell input:focus {
   background-color: #ccc;
+}
+
+.prov-values {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.prov-values span {
+  width: 33%;
+  height: 33%;
+  font-size: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

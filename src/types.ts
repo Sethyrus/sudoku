@@ -11,7 +11,7 @@ export interface SudokuCellProps
 export interface SudokuMatrixCell
 {
   value: SudokuMatrixCellValue;
-  provValues?: number[];
+  provValues: number[];
   default?: boolean;
 }
 

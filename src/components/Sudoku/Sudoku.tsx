@@ -6,103 +6,103 @@ import { SudokuMatrix, SudokuMatrixCellValue } from "../../types";
 const Sudoku = () => {
   const [sudokuMatrix, setSudokuMatrix] = useState<SudokuMatrix>([
     [
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 7, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 3, default: true },
-      { value: null, default: false },
-      { value: 6, default: true },
-      { value: 1, default: true },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 7, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 3, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 6, default: true, provValues: [] },
+      { value: 1, default: true, provValues: [] },
     ],
     [
-      { value: null, default: false },
-      { value: 1, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 8, default: true },
-      { value: 6, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
+      { value: null, default: false, provValues: [] },
+      { value: 1, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 8, default: true, provValues: [] },
+      { value: 6, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
     [
-      { value: 3, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 7, default: true },
-      { value: 9, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
+      { value: 3, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 7, default: true, provValues: [] },
+      { value: 9, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
     [
-      { value: 1, default: true },
-      { value: null, default: false },
-      { value: 3, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 5, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
+      { value: 1, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 3, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 5, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
     [
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 8, default: true },
-      { value: 9, default: true },
-      { value: 2, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 8, default: true, provValues: [] },
+      { value: 9, default: true, provValues: [] },
+      { value: 2, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
     [
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 4, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 8, default: true },
-      { value: null, default: false },
-      { value: 6, default: true },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 4, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 8, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 6, default: true, provValues: [] },
     ],
     [
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 5, default: true },
-      { value: 4, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 3, default: true },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 5, default: true, provValues: [] },
+      { value: 4, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 3, default: true, provValues: [] },
     ],
     [
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 7, default: true },
-      { value: 3, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 8, default: true },
-      { value: null, default: false },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 7, default: true, provValues: [] },
+      { value: 3, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 8, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
     [
-      { value: 9, default: true },
-      { value: 3, default: true },
-      { value: null, default: false },
-      { value: 5, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
-      { value: 7, default: true },
-      { value: null, default: false },
-      { value: null, default: false },
+      { value: 9, default: true, provValues: [] },
+      { value: 3, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 5, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: 7, default: true, provValues: [] },
+      { value: null, default: false, provValues: [] },
+      { value: null, default: false, provValues: [] },
     ],
   ]);
 
@@ -172,16 +172,6 @@ const Sudoku = () => {
 
   const isSolved = (): boolean => isComplete() && isValid();
 
-  const solveSudoku = (): void => {
-    const iterator = setInterval(() => {
-      if (!isSolved()) {
-        iterateSudoku();
-      } else {
-        clearInterval(iterator);
-      }
-    }, 50);
-  };
-
   const getPossibilities = (): number[] => {
     const possibilities: number[] = [];
 
@@ -217,6 +207,16 @@ const Sudoku = () => {
     setSudokuMatrix(provisionalMatrix);
   };
 
+  const solveSudoku = (): void => {
+    const iterator = setInterval(() => {
+      if (!isSolved()) {
+        iterateSudoku();
+      } else {
+        clearInterval(iterator);
+      }
+    }, 50);
+  };
+
   return (
     <>
       <div className="sudoku-container">
@@ -230,7 +230,7 @@ const Sudoku = () => {
                 valueChange={(val) => {
                   if (!val || (val > 0 && val < 10)) {
                     const newSudoku: SudokuMatrix = [...sudokuMatrix];
-                    newSudoku[i][a] = { value: val };
+                    newSudoku[i][a] = { value: val, provValues: [] };
                     setSudokuMatrix(newSudoku);
                   }
                 }}
