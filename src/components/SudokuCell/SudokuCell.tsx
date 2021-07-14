@@ -13,23 +13,46 @@ const SudokuCell = (props: SudokuCellProps) => {
           value={props.cellData.value || ""}
           onChange={(e) => props.valueChange(parseInt(e.target.value))}
           onKeyDown={(e) => {
-            e.preventDefault();
-
-            if (e.key === 'ArrowUp') {
+            if (
+              e.key !== "ArrowUp" &&
+              e.key !== "ArrowRight" &&
+              e.key !== "ArrowDown" &&
+              e.key !== "ArrowLeft" &&
+              e.key !== "Backspace" &&
+              !(parseInt(e.key) > 0 && parseInt(e.key) < 10)
+            ) {
+              e.preventDefault();
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
               if (props.position.x > 0) {
-                document.getElementById((props.position.x - 1) + "-" + props.position.y)?.focus();
+                document
+                  .getElementById(props.position.x - 1 + "-" + props.position.y)
+                  ?.focus();
               }
-            } else if (e.key === 'ArrowRight') {
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
               if (props.position.y < 9) {
-                document.getElementById(props.position.x + "-" + (props.position.y + 1))?.focus();
+                document
+                  .getElementById(
+                    props.position.x + "-" + (props.position.y + 1)
+                  )
+                  ?.focus();
               }
-            } else if (e.key === 'ArrowDown') {
+            } else if (e.key === "ArrowDown") {
+              e.preventDefault();
               if (props.position.x < 9) {
-                document.getElementById((props.position.x + 1) + "-" + props.position.y)?.focus();
+                document
+                  .getElementById(props.position.x + 1 + "-" + props.position.y)
+                  ?.focus();
               }
-            } else if (e.key === 'ArrowLeft') {
+            } else if (e.key === "ArrowLeft") {
+              e.preventDefault();
               if (props.position.y > 0) {
-                document.getElementById(props.position.x + "-" + (props.position.y - 1))?.focus();
+                document
+                  .getElementById(
+                    props.position.x + "-" + (props.position.y - 1)
+                  )
+                  ?.focus();
               }
             }
           }}
