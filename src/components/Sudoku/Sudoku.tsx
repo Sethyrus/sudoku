@@ -285,53 +285,45 @@ const Sudoku = () => {
     [blockValues, colValues, rowValues]
   );
 
-  const iterateSudoku = useCallback(() => {
+  const setInitialValues = useCallback((): void => {
     const provisionalMatrix: SudokuMatrix = [];
-
-    setIteratorRound(iteratorRound + 1);
 
     sudokuMatrix.forEach((row, y) => {
       row.forEach((cell, x) => {
-        if (!cell.value) {
-          const possibilities: number[] = getPossibilities({ x, y });
-
-          if (possibilities.length > 1) {
-            if (!provisionalMatrix[y]) {
-              provisionalMatrix[y] = [];
-            }
-
-            provisionalMatrix[y][x] = cell.default
-              ? cell
-              : {
-                  value: null,
-                  provValues: possibilities,
-                  default: false,
-                };
-          } else {
-            if (!provisionalMatrix[y]) {
-              provisionalMatrix[y] = [];
-            }
-
-            provisionalMatrix[y][x] = cell.default
-              ? cell
-              : {
-                  value: possibilities[0],
-                  provValues: possibilities,
-                  default: false,
-                };
-          }
-        } else {
+        if (cell.default) {
           if (!provisionalMatrix[y]) {
             provisionalMatrix[y] = [];
           }
 
           provisionalMatrix[y][x] = cell;
+        } else {
+          const possibilities: number[] = getPossibilities({ x, y });
+
+          if (!provisionalMatrix[y]) {
+            provisionalMatrix[y] = [];
+          }
+
+          provisionalMatrix[y][x] = {
+            value: null,
+            provValues: possibilities,
+            default: false,
+          };
         }
       });
     });
 
     setSudokuMatrix(provisionalMatrix);
-  }, [getPossibilities, sudokuMatrix, iteratorRound]);
+  }, [getPossibilities, sudokuMatrix]);
+
+  const iterateSudoku = useCallback(() => {
+    if (iteratorRound === 0) {
+      setInitialValues();
+    } else {
+
+    }
+
+    setIteratorRound(iteratorRound + 1);
+  }, [iteratorRound, setInitialValues]);
 
   const solveSudoku = (): void => setUseIterator(true);
 
@@ -379,9 +371,9 @@ const Sudoku = () => {
       <br />
 
       <span>
-        <span>[Valid: {isValid() ? "Sí" : "No"}] - </span>
-        <span>[Ronda: {iteratorRound}] - </span>
-        <span>[Solved: {isSolved() ? "Sí" : "No"}]</span>
+        <span>[ronda: {iteratorRound}] - </span>
+        <span>[valid: {isValid() ? "sí" : "no"}] - </span>
+        <span>[solved: {isSolved() ? "sí" : "no"}]</span>
       </span>
 
       <br />
