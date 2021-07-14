@@ -1,7 +1,11 @@
 import "./Sudoku.css";
 import { useState } from "react";
 import SudokuCell from "../SudokuCell/SudokuCell";
-import { SudokuMatrix, SudokuMatrixCellValue } from "../../types";
+import {
+  SudokuCellPosition,
+  SudokuMatrix,
+  SudokuMatrixCellValue,
+} from "../../types";
 
 const Sudoku = () => {
   const [sudokuMatrix, setSudokuMatrix] = useState<SudokuMatrix>([
@@ -106,6 +110,8 @@ const Sudoku = () => {
     ],
   ]);
 
+  const [iterator, setIterator] = useState<NodeJS.Timeout>();
+
   const rowsValid = (): boolean =>
     !sudokuMatrix.some((row) => {
       const rowVals: SudokuMatrixCellValue[] = [];
@@ -121,16 +127,13 @@ const Sudoku = () => {
     });
 
   const colsValid = (): boolean => {
-    for (let i = 0; i < sudokuMatrix.length; i++) {
+    for (let y = 0; y < sudokuMatrix.length; y++) {
       const colVals: SudokuMatrixCellValue[] = [];
 
-      for (let a = 0; a < sudokuMatrix.length; a++) {
-        if (
-          !sudokuMatrix[a][i].value ||
-          (sudokuMatrix[a][i].value &&
-            !colVals.includes(sudokuMatrix[a][i].value))
-        ) {
-          colVals.push(sudokuMatrix[a][i].value);
+      for (let x = 0; x < sudokuMatrix[y].length; x++) {
+        const cell = sudokuMatrix[y][x];
+        if (!cell.value || (cell.value && !colVals.includes(cell.value))) {
+          colVals.push(cell.value);
         } else {
           return false;
         }
@@ -160,6 +163,7 @@ const Sudoku = () => {
         }
       }
     }
+
     return true;
   };
 
@@ -172,8 +176,79 @@ const Sudoku = () => {
 
   const isSolved = (): boolean => isComplete() && isValid();
 
-  const getPossibilities = (): number[] => {
-    const possibilities: number[] = [];
+  const rowValues = (row: number): number[] => {
+    const values: number[] = [];
+
+    sudokuMatrix[row].forEach((cell) => {
+      if (cell.value) {
+        values.push(cell.value);
+      }
+    });
+
+    return values;
+  };
+
+  const colValues = (col: number): number[] => {
+    const values: number[] = [];
+
+    for (let i = 0; i < 9; i++) {
+      const cell = sudokuMatrix[i][col];
+
+      if (cell.value) {
+        values.push(cell.value);
+      }
+    }
+
+    return values;
+  };
+
+  const blockValues = (blockOffset: SudokuCellPosition): number[] => {
+    const values: number[] = [];
+
+    for (let e = 3 * blockOffset.y; e < 3 * blockOffset.y + 3; e++) {
+      for (let u = 3 * blockOffset.x; u < 3 * blockOffset.x + 3; u++) {
+        const cell = sudokuMatrix[e][u];
+
+        if (cell.value) {
+          values.push(cell.value);
+        }
+      }
+    }
+
+    return values;
+  };
+
+  const getPossibilities = (position: SudokuCellPosition): number[] => {
+    const possibilities: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    rowValues(position.y).forEach((rowValue) => {
+      possibilities.splice(
+        possibilities.findIndex((possibility) => possibility === rowValue),
+        1
+      );
+    });
+
+    colValues(position.x).forEach((colValue) => {
+      possibilities.splice(
+        possibilities.findIndex((possibility) => possibility === colValue),
+        1
+      );
+    });
+
+    const foundBlockValues = blockValues({
+      x: Math.floor(position.x / 3),
+      y: Math.floor(position.y / 3),
+    });
+
+    foundBlockValues.forEach((blockValue) => {
+      const valueIndex = possibilities.findIndex(
+        (possibility) => possibility === blockValue
+      );
+
+      if (valueIndex !== -1) {
+        possibilities.splice(valueIndex, 1);
+      }
+    });
 
     return possibilities;
   };
@@ -184,22 +259,39 @@ const Sudoku = () => {
     sudokuMatrix.forEach((row, y) => {
       row.forEach((cell, x) => {
         if (!cell.value) {
-          const possibilities: number[] = getPossibilities();
+          const possibilities: number[] = getPossibilities({ x, y });
 
           if (possibilities.length > 1) {
             if (!provisionalMatrix[y]) {
               provisionalMatrix[y] = [];
             }
 
-            provisionalMatrix[y][x] = {
-              value: sudokuMatrix[y][x].default
-                ? sudokuMatrix[y][x].value
-                : possibilities.length > 1
-                ? null
-                : possibilities[0],
-              provValues: sudokuMatrix[y][x].default ? [] : possibilities,
-            };
+            provisionalMatrix[y][x] = cell.default
+              ? cell
+              : {
+                  value: null,
+                  provValues: possibilities,
+                  default: false,
+                };
+          } else {
+            if (!provisionalMatrix[y]) {
+              provisionalMatrix[y] = [];
+            }
+
+            provisionalMatrix[y][x] = cell.default
+              ? cell
+              : {
+                  value: possibilities[0],
+                  provValues: possibilities,
+                  default: false,
+                };
           }
+        } else {
+          if (!provisionalMatrix[y]) {
+            provisionalMatrix[y] = [];
+          }
+
+          provisionalMatrix[y][x] = cell;
         }
       });
     });
@@ -208,13 +300,17 @@ const Sudoku = () => {
   };
 
   const solveSudoku = (): void => {
-    const iterator = setInterval(() => {
-      if (!isSolved()) {
-        iterateSudoku();
-      } else {
-        clearInterval(iterator);
-      }
-    }, 50);
+    setIterator(
+      setInterval(() => {
+        if (!isSolved()) {
+          iterateSudoku();
+        } else {
+          if (iterator) {
+            clearInterval(iterator);
+          }
+        }
+      }, 500)
+    );
   };
 
   return (
@@ -230,7 +326,11 @@ const Sudoku = () => {
                 valueChange={(val) => {
                   if (!val || (val > 0 && val < 10)) {
                     const newSudoku: SudokuMatrix = [...sudokuMatrix];
-                    newSudoku[i][a] = { value: val, provValues: [] };
+                    newSudoku[i][a] = {
+                      value: val,
+                      provValues: [],
+                      default: false,
+                    };
                     setSudokuMatrix(newSudoku);
                   }
                 }}
@@ -251,6 +351,22 @@ const Sudoku = () => {
       <br />
 
       <button onClick={solveSudoku}>Solve</button>
+      <button
+        onClick={() => {
+          if (iterator) {
+            clearInterval(iterator);
+          }
+        }}
+      >
+        Stop iterator
+      </button>
+      <button
+        onClick={() => {
+          console.log("blockValues", blockValues({ x: 1, y: 1 }));
+        }}
+      >
+        Check
+      </button>
     </>
   );
 };

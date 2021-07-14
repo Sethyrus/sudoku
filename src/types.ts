@@ -1,10 +1,12 @@
+export interface SudokuCellPosition {
+  x: number;
+  y: number;
+}
+
 export interface SudokuCellProps
 {
   cellData: SudokuMatrixCell;
-  position: {
-    x: number;
-    y: number;
-  };
+  position: SudokuCellPosition;
   valueChange: (val: number) => void;
 }
 
@@ -12,7 +14,7 @@ export interface SudokuMatrixCell
 {
   value: SudokuMatrixCellValue;
   provValues: number[];
-  default?: boolean;
+  default: boolean;
 }
 
 export type SudokuMatrix = SudokuMatrixCell[][];

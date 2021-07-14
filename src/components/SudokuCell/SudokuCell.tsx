@@ -68,8 +68,8 @@ const SudokuCell = (props: SudokuCellProps) => {
         />
       ) : (
         <p className="prov-values">
-          {props.cellData.provValues.map((provValue) => (
-            <span>{provValue}</span>
+          {props.cellData.provValues.map((provValue, i) => (
+            <span key={i}>{provValue}</span>
           ))}
         </p>
       )}
