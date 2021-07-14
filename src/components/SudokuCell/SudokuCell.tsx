@@ -26,6 +26,7 @@ const SudokuCell = (props: SudokuCellProps) => {
               e.key !== "ArrowDown" &&
               e.key !== "ArrowLeft" &&
               e.key !== "Backspace" &&
+              e.key !== "Tab" &&
               !(parseInt(e.key) > 0 && parseInt(e.key) < 10)
             ) {
               e.preventDefault();

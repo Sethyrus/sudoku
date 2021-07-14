@@ -1,7 +1,7 @@
 import "./Sudoku.css";
 import { useState } from "react";
 import SudokuCell from "../SudokuCell/SudokuCell";
-import { SudokuMatrix } from "../../types";
+import { SudokuMatrix, SudokuMatrixCellValue } from "../../types";
 
 const Sudoku = () => {
   const [sudokuMatrix, setSudokuMatrix] = useState<SudokuMatrix>([
@@ -108,7 +108,7 @@ const Sudoku = () => {
 
   const rowsValid = (): boolean =>
     !sudokuMatrix.some((row) => {
-      const rowVals: (number | null)[] = [];
+      const rowVals: SudokuMatrixCellValue[] = [];
 
       return row.some((cell) => {
         if (!cell.value || (cell.value && !rowVals.includes(cell.value))) {
@@ -122,7 +122,7 @@ const Sudoku = () => {
 
   const colsValid = (): boolean => {
     for (let i = 0; i < sudokuMatrix.length; i++) {
-      const colVals: (number | null)[] = [];
+      const colVals: SudokuMatrixCellValue[] = [];
 
       for (let a = 0; a < sudokuMatrix.length; a++) {
         if (
@@ -143,7 +143,7 @@ const Sudoku = () => {
   const blocksValid = (): boolean => {
     for (let i = 1; i < 4; i++) {
       for (let a = 1; a < 4; a++) {
-        const blockVals: (number | null)[] = [];
+        const blockVals: SudokuMatrixCellValue[] = [];
 
         for (let e = 0; e < 3; e++) {
           for (let u = 0; u < 3; u++) {
@@ -165,9 +165,57 @@ const Sudoku = () => {
 
   const isValid = (): boolean => rowsValid() && colsValid() && blocksValid();
 
-  const solveSudoku = (): void => {
+  const isComplete = (): boolean =>
+    sudokuMatrix.every((row) => {
+      return row.every((cell) => cell.value);
+    });
 
-  }
+  const isSolved = (): boolean => isComplete() && isValid();
+
+  const solveSudoku = (): void => {
+    const iterator = setInterval(() => {
+      if (!isSolved()) {
+        iterateSudoku();
+      } else {
+        clearInterval(iterator);
+      }
+    }, 50);
+  };
+
+  const getPossibilities = (): number[] => {
+    const possibilities: number[] = [];
+
+    return possibilities;
+  };
+
+  const iterateSudoku = () => {
+    const provisionalMatrix: SudokuMatrix = [];
+
+    sudokuMatrix.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        if (!cell.value) {
+          const possibilities: number[] = getPossibilities();
+
+          if (possibilities.length > 1) {
+            if (!provisionalMatrix[y]) {
+              provisionalMatrix[y] = [];
+            }
+
+            provisionalMatrix[y][x] = {
+              value: sudokuMatrix[y][x].default
+                ? sudokuMatrix[y][x].value
+                : possibilities.length > 1
+                ? null
+                : possibilities[0],
+              provValues: sudokuMatrix[y][x].default ? [] : possibilities,
+            };
+          }
+        }
+      });
+    });
+
+    setSudokuMatrix(provisionalMatrix);
+  };
 
   return (
     <>
@@ -195,6 +243,10 @@ const Sudoku = () => {
       <br />
 
       <span>Valid: [{isValid() ? "Sí" : "No"}]</span>
+
+      <br />
+
+      <span>Solved: [{isSolved() ? "Sí" : "No"}]</span>
 
       <br />
 

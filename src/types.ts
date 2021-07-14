@@ -1,4 +1,5 @@
-export interface SudokuCellProps {
+export interface SudokuCellProps
+{
   cellData: SudokuMatrixCell;
   position: {
     x: number;
@@ -7,9 +8,13 @@ export interface SudokuCellProps {
   valueChange: (val: number) => void;
 }
 
-export interface SudokuMatrixCell {
-  value: number | null;
+export interface SudokuMatrixCell
+{
+  value: SudokuMatrixCellValue;
+  provValues?: number[];
   default?: boolean;
 }
 
 export type SudokuMatrix = SudokuMatrixCell[][];
+
+export type SudokuMatrixCellValue = number | null | undefined;
