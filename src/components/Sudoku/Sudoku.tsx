@@ -114,6 +114,15 @@ const Sudoku = () => {
 
   const [iteratorRound, setIteratorRound] = useState<number>(0);
 
+  const [currPosition, setCurrPosition] = useState<SudokuCellPosition>({
+    x: 0,
+    y: 0,
+  });
+
+  const [lastAction, setLastAction] = useState<"forward" | "backward">(
+    "forward"
+  );
+
   const rowsValid = useCallback(
     (): boolean =>
       !sudokuMatrix.some((row) => {
@@ -315,15 +324,110 @@ const Sudoku = () => {
     setSudokuMatrix(provisionalMatrix);
   }, [getPossibilities, sudokuMatrix]);
 
+  // Esto debe en cada iteración establecer el primer valor disponible de la casilla que
+  // toque y comprobar si es válido. Si lo es, se avanza a la siguiente casilla; si no,
+  // se escoge el siguiente número posible de esa casilla. Si no hay más, retrocede a la
+  // anterior y escoge el siguiente número posible. Así hasta resolverlo.
+  const nextRound = useCallback((): void => {
+    const provisionalMatrix: SudokuMatrix = [...sudokuMatrix];
+    let nextCurrPosition: SudokuCellPosition;
+    let nextLastAction: "forward" | "backward";
+
+    if (!sudokuMatrix[currPosition.y][currPosition.x].default) {
+      if (sudokuMatrix[currPosition.y][currPosition.x].value) {
+        if (isValid()) {
+          console.log(1);
+          // Siguiente casilla
+          nextCurrPosition = {
+            x: currPosition.x === 8 ? 0 : currPosition.x + 1,
+            y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
+          };
+
+          nextLastAction = "forward";
+        } else {
+          const newValue: number | undefined =
+            sudokuMatrix[currPosition.y][currPosition.x].provValues[
+              sudokuMatrix[currPosition.y][currPosition.x].provValues.findIndex(
+                (provValue) =>
+                  provValue ===
+                  sudokuMatrix[currPosition.y][currPosition.x].value
+              ) + 1
+            ];
+
+          if (newValue) {
+            console.log(2);
+            provisionalMatrix[currPosition.y][currPosition.x].value = newValue;
+
+            // Misma casilla (debe comprobarse)
+            nextCurrPosition = currPosition;
+            nextLastAction = lastAction;
+          } else {
+            console.log(3);
+            // Casilla anterior
+            nextCurrPosition = {
+              x: currPosition.x === 0 ? 8 : currPosition.x - 1,
+              y: currPosition.x === 0 ? currPosition.y - 1 : currPosition.y,
+            };
+
+            // provisionalMatrix[currPosition.y][currPosition.x].value = null;
+
+            nextLastAction = "backward";
+          }
+        }
+      } else {
+        console.log(4);
+        // Siguiente casilla
+        // nextCurrPosition = {
+        //   x: currPosition.x === 8 ? 0 : currPosition.x + 1,
+        //   y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
+        // };
+
+        // Misma casilla (debe comprobarse)
+        nextCurrPosition = currPosition;
+
+        provisionalMatrix[currPosition.y][currPosition.x].value =
+          sudokuMatrix[currPosition.y][currPosition.x].provValues[0];
+
+        nextLastAction = "forward";
+      }
+    } else {
+      // let nextCurrPosition: SudokuCellPosition;
+
+      if (lastAction === "forward") {
+        console.log(5);
+        // Siguiente casilla
+        nextCurrPosition = {
+          x: currPosition.x === 8 ? 0 : currPosition.x + 1,
+          y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
+        };
+
+        nextLastAction = lastAction;
+      } else {
+        console.log(6);
+        // Casilla anterior
+        nextCurrPosition = {
+          x: currPosition.x === 0 ? 8 : currPosition.x - 1,
+          y: currPosition.x === 0 ? currPosition.y - 1 : currPosition.y,
+        };
+
+        nextLastAction = lastAction;
+      }
+    }
+
+    setCurrPosition(nextCurrPosition);
+    setSudokuMatrix(provisionalMatrix);
+    setLastAction(nextLastAction);
+  }, [currPosition, isValid, sudokuMatrix, lastAction]);
+
   const iterateSudoku = useCallback(() => {
     if (iteratorRound === 0) {
       setInitialValues();
     } else {
-
+      nextRound();
     }
 
     setIteratorRound(iteratorRound + 1);
-  }, [iteratorRound, setInitialValues]);
+  }, [iteratorRound, setInitialValues, nextRound]);
 
   const solveSudoku = (): void => setUseIterator(true);
 
@@ -333,7 +437,7 @@ const Sudoku = () => {
     if (useIterator) {
       timeout = setTimeout(() => {
         if (!isSolved()) iterateSudoku();
-      }, 1000);
+      }, 250);
     }
 
     return () => {
