@@ -177,7 +177,7 @@ const Sudoku = () => {
             {sudokuRow.map((sudokuCell, a) => (
               <SudokuCell
                 key={a}
-                position={{ x: i, y: a }}
+                position={{ x: a, y: i }}
                 cellData={sudokuCell}
                 valueChange={(val) => {
                   if (!val || (val > 0 && val < 10)) {

@@ -4,6 +4,22 @@
   border: 2px solid black;
 }
 
+.sudoku-cell.x-1 {
+  border-left: 3px solid black;
+}
+
+.sudoku-cell.y-1 {
+  border-top: 3px solid black;
+}
+
+.sudoku-cell.x-0 {
+  border-right: 3px solid black;
+}
+
+.sudoku-cell.y-0 {
+  border-bottom: 3px solid black;
+}
+
 .sudoku-cell input,
 .sudoku-cell p {
   width: 100%;

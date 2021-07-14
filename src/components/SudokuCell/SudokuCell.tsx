@@ -3,7 +3,14 @@ import "./SudokuCell.css";
 
 const SudokuCell = (props: SudokuCellProps) => {
   return (
-    <div className={"sudoku-cell"}>
+    <div
+      className={
+        "sudoku-cell x-" +
+        ((props.position.x + 1) % 3) +
+        " y-" +
+        ((props.position.y + 1) % 3)
+      }
+    >
       {props.cellData.default ? (
         <p className="default-value">{props.cellData.value}</p>
       ) : (
@@ -24,12 +31,21 @@ const SudokuCell = (props: SudokuCellProps) => {
               e.preventDefault();
             } else if (e.key === "ArrowUp") {
               e.preventDefault();
-              if (props.position.x > 0) {
+              if (props.position.y > 0) {
                 document
-                  .getElementById(props.position.x - 1 + "-" + props.position.y)
+                  .getElementById(
+                    props.position.x + "-" + (props.position.y - 1)
+                  )
                   ?.focus();
               }
             } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              if (props.position.x < 9) {
+                document
+                  .getElementById(props.position.x + 1 + "-" + props.position.y)
+                  ?.focus();
+              }
+            } else if (e.key === "ArrowDown") {
               e.preventDefault();
               if (props.position.y < 9) {
                 document
@@ -38,20 +54,11 @@ const SudokuCell = (props: SudokuCellProps) => {
                   )
                   ?.focus();
               }
-            } else if (e.key === "ArrowDown") {
-              e.preventDefault();
-              if (props.position.x < 9) {
-                document
-                  .getElementById(props.position.x + 1 + "-" + props.position.y)
-                  ?.focus();
-              }
             } else if (e.key === "ArrowLeft") {
               e.preventDefault();
-              if (props.position.y > 0) {
+              if (props.position.x > 0) {
                 document
-                  .getElementById(
-                    props.position.x + "-" + (props.position.y - 1)
-                  )
+                  .getElementById(props.position.x - 1 + "-" + props.position.y)
                   ?.focus();
               }
             }
