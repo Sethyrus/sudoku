@@ -1,5 +1,5 @@
 import "./Sudoku.css";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SudokuCell from "../SudokuCell/SudokuCell";
 import {
   SudokuCellPosition,
@@ -112,21 +112,26 @@ const Sudoku = () => {
 
   const [iterator, setIterator] = useState<NodeJS.Timeout>();
 
-  const rowsValid = (): boolean =>
-    !sudokuMatrix.some((row) => {
-      const rowVals: SudokuMatrixCellValue[] = [];
+  const [useIterator, setUseIterator] = useState<boolean>(false);
 
-      return row.some((cell) => {
-        if (!cell.value || (cell.value && !rowVals.includes(cell.value))) {
-          rowVals.push(cell.value);
-          return false;
-        } else {
-          return true;
-        }
-      });
-    });
+  const rowsValid = useCallback(
+    (): boolean =>
+      !sudokuMatrix.some((row) => {
+        const rowVals: SudokuMatrixCellValue[] = [];
 
-  const colsValid = (): boolean => {
+        return row.some((cell) => {
+          if (!cell.value || (cell.value && !rowVals.includes(cell.value))) {
+            rowVals.push(cell.value);
+            return false;
+          } else {
+            return true;
+          }
+        });
+      }),
+    [sudokuMatrix]
+  );
+
+  const colsValid = useCallback((): boolean => {
     for (let y = 0; y < sudokuMatrix.length; y++) {
       const colVals: SudokuMatrixCellValue[] = [];
 
@@ -141,9 +146,9 @@ const Sudoku = () => {
     }
 
     return true;
-  };
+  }, [sudokuMatrix]);
 
-  const blocksValid = (): boolean => {
+  const blocksValid = useCallback((): boolean => {
     for (let i = 1; i < 4; i++) {
       for (let a = 1; a < 4; a++) {
         const blockVals: SudokuMatrixCellValue[] = [];
@@ -165,95 +170,116 @@ const Sudoku = () => {
     }
 
     return true;
-  };
+  }, [sudokuMatrix]);
 
-  const isValid = (): boolean => rowsValid() && colsValid() && blocksValid();
+  const isValid = useCallback(
+    (): boolean => rowsValid() && colsValid() && blocksValid(),
+    [blocksValid, colsValid, rowsValid]
+  );
 
-  const isComplete = (): boolean =>
-    sudokuMatrix.every((row) => {
-      return row.every((cell) => cell.value);
-    });
+  const isComplete = useCallback(
+    (): boolean =>
+      sudokuMatrix.every((row) => {
+        return row.every((cell) => cell.value);
+      }),
+    [sudokuMatrix]
+  );
 
-  const isSolved = (): boolean => isComplete() && isValid();
+  const isSolved = useCallback(
+    (): boolean => isComplete() && isValid(),
+    [isComplete, isValid]
+  );
 
-  const rowValues = (row: number): number[] => {
-    const values: number[] = [];
+  const rowValues = useCallback(
+    (row: number): number[] => {
+      const values: number[] = [];
 
-    sudokuMatrix[row].forEach((cell) => {
-      if (cell.value) {
-        values.push(cell.value);
-      }
-    });
+      sudokuMatrix[row].forEach((cell) => {
+        if (cell.value) {
+          values.push(cell.value);
+        }
+      });
 
-    return values;
-  };
+      return values;
+    },
+    [sudokuMatrix]
+  );
 
-  const colValues = (col: number): number[] => {
-    const values: number[] = [];
+  const colValues = useCallback(
+    (col: number): number[] => {
+      const values: number[] = [];
 
-    for (let i = 0; i < 9; i++) {
-      const cell = sudokuMatrix[i][col];
-
-      if (cell.value) {
-        values.push(cell.value);
-      }
-    }
-
-    return values;
-  };
-
-  const blockValues = (blockOffset: SudokuCellPosition): number[] => {
-    const values: number[] = [];
-
-    for (let e = 3 * blockOffset.y; e < 3 * blockOffset.y + 3; e++) {
-      for (let u = 3 * blockOffset.x; u < 3 * blockOffset.x + 3; u++) {
-        const cell = sudokuMatrix[e][u];
+      for (let i = 0; i < 9; i++) {
+        const cell = sudokuMatrix[i][col];
 
         if (cell.value) {
           values.push(cell.value);
         }
       }
-    }
 
-    return values;
-  };
+      return values;
+    },
+    [sudokuMatrix]
+  );
 
-  const getPossibilities = (position: SudokuCellPosition): number[] => {
-    const possibilities: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const blockValues = useCallback(
+    (blockOffset: SudokuCellPosition): number[] => {
+      const values: number[] = [];
 
-    rowValues(position.y).forEach((rowValue) => {
-      possibilities.splice(
-        possibilities.findIndex((possibility) => possibility === rowValue),
-        1
-      );
-    });
+      for (let e = 3 * blockOffset.y; e < 3 * blockOffset.y + 3; e++) {
+        for (let u = 3 * blockOffset.x; u < 3 * blockOffset.x + 3; u++) {
+          const cell = sudokuMatrix[e][u];
 
-    colValues(position.x).forEach((colValue) => {
-      possibilities.splice(
-        possibilities.findIndex((possibility) => possibility === colValue),
-        1
-      );
-    });
-
-    const foundBlockValues = blockValues({
-      x: Math.floor(position.x / 3),
-      y: Math.floor(position.y / 3),
-    });
-
-    foundBlockValues.forEach((blockValue) => {
-      const valueIndex = possibilities.findIndex(
-        (possibility) => possibility === blockValue
-      );
-
-      if (valueIndex !== -1) {
-        possibilities.splice(valueIndex, 1);
+          if (cell.value) {
+            values.push(cell.value);
+          }
+        }
       }
-    });
 
-    return possibilities;
-  };
+      return values;
+    },
+    [sudokuMatrix]
+  );
 
-  const iterateSudoku = () => {
+  const getPossibilities = useCallback(
+    (position: SudokuCellPosition): number[] => {
+      const possibilities: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      rowValues(position.y).forEach((rowValue) => {
+        possibilities.splice(
+          possibilities.findIndex((possibility) => possibility === rowValue),
+          1
+        );
+      });
+
+      colValues(position.x).forEach((colValue) => {
+        possibilities.splice(
+          possibilities.findIndex((possibility) => possibility === colValue),
+          1
+        );
+      });
+
+      const foundBlockValues = blockValues({
+        x: Math.floor(position.x / 3),
+        y: Math.floor(position.y / 3),
+      });
+
+      foundBlockValues.forEach((blockValue) => {
+        const valueIndex = possibilities.findIndex(
+          (possibility) => possibility === blockValue
+        );
+
+        if (valueIndex !== -1) {
+          possibilities.splice(valueIndex, 1);
+        }
+      });
+
+      return possibilities;
+    },
+    [blockValues, colValues, rowValues]
+  );
+
+  const iterateSudoku = useCallback(() => {
     const provisionalMatrix: SudokuMatrix = [];
 
     sudokuMatrix.forEach((row, y) => {
@@ -297,21 +323,29 @@ const Sudoku = () => {
     });
 
     setSudokuMatrix(provisionalMatrix);
-  };
+  }, [getPossibilities, sudokuMatrix]);
 
   const solveSudoku = (): void => {
-    setIterator(
-      setInterval(() => {
+    setUseIterator(true);
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (useIterator) {
+      interval = setInterval(() => {
         if (!isSolved()) {
           iterateSudoku();
         } else {
-          if (iterator) {
-            clearInterval(iterator);
-          }
+          clearInterval(interval);
         }
-      }, 500)
-    );
-  };
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [useIterator, isSolved, iterateSudoku]);
 
   return (
     <>
@@ -350,23 +384,9 @@ const Sudoku = () => {
 
       <br />
 
-      <button onClick={solveSudoku}>Solve</button>
-      <button
-        onClick={() => {
-          if (iterator) {
-            clearInterval(iterator);
-          }
-        }}
-      >
-        Stop iterator
-      </button>
-      <button
-        onClick={() => {
-          console.log("blockValues", blockValues({ x: 1, y: 1 }));
-        }}
-      >
-        Check
-      </button>
+      <button onClick={solveSudoku}>Start iterator</button>
+      <button onClick={() => setUseIterator(false)}>Stop iterator</button>
+      <button>Check</button>
     </>
   );
 };
