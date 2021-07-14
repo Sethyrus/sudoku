@@ -10,7 +10,6 @@ export interface SudokuMatrixCell {
 type SudokuMatrix = SudokuMatrixCell[][];
 
 const Sudoku = () => {
-
   const [sudokuMatrix, setSudokuMatrix] = useState<SudokuMatrix>([
     [
       { value: 5, default: true },
@@ -132,7 +131,11 @@ const Sudoku = () => {
       const colVals: (number | null)[] = [];
 
       for (let a = 0; a < sudokuMatrix.length; a++) {
-        if (!sudokuMatrix[a][i].value || (sudokuMatrix[a][i].value && !colVals.includes(sudokuMatrix[a][i].value))) {
+        if (
+          !sudokuMatrix[a][i].value ||
+          (sudokuMatrix[a][i].value &&
+            !colVals.includes(sudokuMatrix[a][i].value))
+        ) {
           colVals.push(sudokuMatrix[a][i].value);
         } else {
           return false;
@@ -141,11 +144,30 @@ const Sudoku = () => {
     }
 
     return true;
-  }
+  };
 
   const blocksValid = (): boolean => {
+    for (let i = 1; i < 4; i++) {
+      for (let a = 1; a < 4; a++) {
+        const blockVals: (number | null)[] = [];
+
+        for (let e = 0; e < 3; e++) {
+          for (let u = 0; u < 3; u++) {
+            if (
+              !sudokuMatrix[e][u].value ||
+              (sudokuMatrix[e][u].value &&
+                !blockVals.includes(sudokuMatrix[e][u].value))
+            ) {
+              blockVals.push(sudokuMatrix[e][u].value);
+            } else {
+              return false;
+            }
+          }
+        }
+      }
+    }
     return true;
-  }
+  };
 
   const isValid = (): boolean => rowsValid() && colsValid() && blocksValid();
 
@@ -157,6 +179,7 @@ const Sudoku = () => {
             {sudokuRow.map((sudokuCell, a) => (
               <SudokuCell
                 key={a}
+                position={{ x: i, y: a }}
                 cellStatus={sudokuCell}
                 valueChange={(val) => {
                   if (!val || (val > 0 && val < 10)) {
@@ -170,10 +193,10 @@ const Sudoku = () => {
           </div>
         ))}
       </div>
+
       <span>Valid: [{isValid() ? "Sí" : "No"}]</span>
     </>
   );
-  
 };
 
 export default Sudoku;
