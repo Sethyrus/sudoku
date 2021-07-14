@@ -112,6 +112,8 @@ const Sudoku = () => {
 
   const [useIterator, setUseIterator] = useState<boolean>(false);
 
+  const [iteratorRound, setIteratorRound] = useState<number>(0);
+
   const rowsValid = useCallback(
     (): boolean =>
       !sudokuMatrix.some((row) => {
@@ -244,17 +246,23 @@ const Sudoku = () => {
       const possibilities: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
       rowValues(position.y).forEach((rowValue) => {
-        possibilities.splice(
-          possibilities.findIndex((possibility) => possibility === rowValue),
-          1
+        const valueIndex = possibilities.findIndex(
+          (possibility) => possibility === rowValue
         );
+
+        if (valueIndex !== -1) {
+          possibilities.splice(valueIndex, 1);
+        }
       });
 
       colValues(position.x).forEach((colValue) => {
-        possibilities.splice(
-          possibilities.findIndex((possibility) => possibility === colValue),
-          1
+        const valueIndex = possibilities.findIndex(
+          (possibility) => possibility === colValue
         );
+
+        if (valueIndex !== -1) {
+          possibilities.splice(valueIndex, 1);
+        }
       });
 
       const foundBlockValues = blockValues({
@@ -279,6 +287,8 @@ const Sudoku = () => {
 
   const iterateSudoku = useCallback(() => {
     const provisionalMatrix: SudokuMatrix = [];
+
+    setIteratorRound(iteratorRound + 1);
 
     sudokuMatrix.forEach((row, y) => {
       row.forEach((cell, x) => {
@@ -321,27 +331,21 @@ const Sudoku = () => {
     });
 
     setSudokuMatrix(provisionalMatrix);
-  }, [getPossibilities, sudokuMatrix]);
+  }, [getPossibilities, sudokuMatrix, iteratorRound]);
 
-  const solveSudoku = (): void => {
-    setUseIterator(true);
-  };
+  const solveSudoku = (): void => setUseIterator(true);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout;
 
     if (useIterator) {
-      interval = setInterval(() => {
-        if (!isSolved()) {
-          iterateSudoku();
-        } else {
-          clearInterval(interval);
-        }
+      timeout = setTimeout(() => {
+        if (!isSolved()) iterateSudoku();
       }, 1000);
     }
 
     return () => {
-      clearInterval(interval);
+      clearInterval(timeout);
     };
   }, [useIterator, isSolved, iterateSudoku]);
 
@@ -374,17 +378,17 @@ const Sudoku = () => {
 
       <br />
 
-      <span>Valid: [{isValid() ? "Sí" : "No"}]</span>
-
-      <br />
-
-      <span>Solved: [{isSolved() ? "Sí" : "No"}]</span>
+      <span>
+        <span>[Valid: {isValid() ? "Sí" : "No"}] - </span>
+        <span>[Ronda: {iteratorRound}] - </span>
+        <span>[Solved: {isSolved() ? "Sí" : "No"}]</span>
+      </span>
 
       <br />
 
       <button onClick={solveSudoku}>Start iterator</button>
       <button onClick={() => setUseIterator(false)}>Stop iterator</button>
-      <button>Check</button>
+      <button onClick={() => console.log(rowValues(8))}>Check</button>
     </>
   );
 };
