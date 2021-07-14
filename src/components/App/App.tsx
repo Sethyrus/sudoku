@@ -7,6 +7,9 @@ const App = () => {
       <div className="title">
         <h1>SUDOKU</h1>
       </div>
+
+      <br />
+
       <Sudoku />
     </div>
   );

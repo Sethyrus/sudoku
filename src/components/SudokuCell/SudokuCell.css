@@ -1,6 +1,6 @@
 .sudoku-cell {
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  height: 58px;
   border: 2px solid black;
 }
 
@@ -13,7 +13,7 @@
   outline: none;
   padding: 0;
   margin: 0;
-  font-size: 48px;
+  font-size: 42px;
   font-weight: bold;
   text-align: center;
   display: flex;
@@ -28,7 +28,7 @@
 }
 
 .default-value {
-  color: #333;
+  background-color: #777!important;
 }
 
 .sudoku-cell input:focus {
