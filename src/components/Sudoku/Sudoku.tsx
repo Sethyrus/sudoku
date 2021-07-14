@@ -110,8 +110,6 @@ const Sudoku = () => {
     ],
   ]);
 
-  const [iterator, setIterator] = useState<NodeJS.Timeout>();
-
   const [useIterator, setUseIterator] = useState<boolean>(false);
 
   const rowsValid = useCallback(
