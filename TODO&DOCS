@@ -1,0 +1,2 @@
+[ ] El iterador, en vez de buscar el siguiente dígito debería coger siempre el
+primero del listado. Cuando un número falle, eliminarlo con un shift.
