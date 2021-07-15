@@ -337,7 +337,7 @@ const Sudoku = () => {
 
     if (!sudokuMatrix[currPosition.y][currPosition.x].default) {
       if (sudokuMatrix[currPosition.y][currPosition.x].value) {
-        if (isValid() && lastAction === 'forward') {
+        if (isValid() && lastAction === "forward") {
           // console.log('1 (isValid -> forward)');
           // Siguiente casilla
           nextCurrPosition = {
@@ -362,7 +362,7 @@ const Sudoku = () => {
 
             // Misma casilla (debe comprobarse)
             nextCurrPosition = currPosition;
-            nextLastAction = 'forward';
+            nextLastAction = "forward";
           } else {
             // console.log('3 (invalid -> no more values, backward');
             // Casilla anterior
@@ -484,9 +484,13 @@ const Sudoku = () => {
 
       <br />
 
-      <button onClick={solveSudoku}>Start iterator</button>
-      <button onClick={() => setUseIterator(false)}>Stop iterator</button>
-      <button onClick={() => console.log(rowsValid())}>Check</button>
+      <span>
+        <button onClick={solveSudoku}>Start iterator</button>
+        &nbsp;
+        <button onClick={() => setUseIterator(false)}>Stop iterator</button>
+        &nbsp;
+        <button onClick={() => console.log(rowsValid())}>Check</button>
+      </span>
     </>
   );
 };

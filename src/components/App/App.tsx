@@ -4,12 +4,6 @@ import './App.css';
 const App = () => {
   return (
     <div className="app-container">
-      <div className="title">
-        <h1>SUDOKU</h1>
-      </div>
-
-      <br />
-
       <Sudoku />
     </div>
   );
