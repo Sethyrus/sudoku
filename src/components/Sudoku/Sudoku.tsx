@@ -141,10 +141,10 @@ const Sudoku = () => {
   );
 
   const colsValid = useCallback((): boolean => {
-    for (let y = 0; y < sudokuMatrix.length; y++) {
+    for (let x = 0; x < sudokuMatrix.length; x++) {
       const colVals: SudokuMatrixCellValue[] = [];
 
-      for (let x = 0; x < sudokuMatrix[y].length; x++) {
+      for (let y = 0; y < sudokuMatrix[x].length; y++) {
         const cell = sudokuMatrix[y][x];
         if (!cell.value || (cell.value && !colVals.includes(cell.value))) {
           colVals.push(cell.value);
@@ -333,10 +333,12 @@ const Sudoku = () => {
     let nextCurrPosition: SudokuCellPosition;
     let nextLastAction: "forward" | "backward";
 
+    // console.log('sudokuMatrix', sudokuMatrix);
+
     if (!sudokuMatrix[currPosition.y][currPosition.x].default) {
       if (sudokuMatrix[currPosition.y][currPosition.x].value) {
-        if (isValid()) {
-          console.log(1);
+        if (isValid() && lastAction === 'forward') {
+          // console.log('1 (isValid -> forward)');
           // Siguiente casilla
           nextCurrPosition = {
             x: currPosition.x === 8 ? 0 : currPosition.x + 1,
@@ -355,27 +357,27 @@ const Sudoku = () => {
             ];
 
           if (newValue) {
-            console.log(2);
+            // console.log('2 (invalid -> assign new value');
             provisionalMatrix[currPosition.y][currPosition.x].value = newValue;
 
             // Misma casilla (debe comprobarse)
             nextCurrPosition = currPosition;
-            nextLastAction = lastAction;
+            nextLastAction = 'forward';
           } else {
-            console.log(3);
+            // console.log('3 (invalid -> no more values, backward');
             // Casilla anterior
             nextCurrPosition = {
               x: currPosition.x === 0 ? 8 : currPosition.x - 1,
               y: currPosition.x === 0 ? currPosition.y - 1 : currPosition.y,
             };
 
-            // provisionalMatrix[currPosition.y][currPosition.x].value = null;
+            provisionalMatrix[currPosition.y][currPosition.x].value = null;
 
             nextLastAction = "backward";
           }
         }
       } else {
-        console.log(4);
+        // console.log('4 (no value, default assigned)');
         // Siguiente casilla
         // nextCurrPosition = {
         //   x: currPosition.x === 8 ? 0 : currPosition.x + 1,
@@ -394,7 +396,7 @@ const Sudoku = () => {
       // let nextCurrPosition: SudokuCellPosition;
 
       if (lastAction === "forward") {
-        console.log(5);
+        // console.log('5 (default -> forward)');
         // Siguiente casilla
         nextCurrPosition = {
           x: currPosition.x === 8 ? 0 : currPosition.x + 1,
@@ -403,7 +405,7 @@ const Sudoku = () => {
 
         nextLastAction = lastAction;
       } else {
-        console.log(6);
+        // console.log('6 (default <- backward)');
         // Casilla anterior
         nextCurrPosition = {
           x: currPosition.x === 0 ? 8 : currPosition.x - 1,
@@ -437,7 +439,7 @@ const Sudoku = () => {
     if (useIterator) {
       timeout = setTimeout(() => {
         if (!isSolved()) iterateSudoku();
-      }, 250);
+      }, 0);
     }
 
     return () => {
@@ -484,7 +486,7 @@ const Sudoku = () => {
 
       <button onClick={solveSudoku}>Start iterator</button>
       <button onClick={() => setUseIterator(false)}>Stop iterator</button>
-      <button onClick={() => console.log(rowValues(8))}>Check</button>
+      <button onClick={() => console.log(rowsValid())}>Check</button>
     </>
   );
 };
