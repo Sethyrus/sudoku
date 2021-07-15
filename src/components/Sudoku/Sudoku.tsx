@@ -109,23 +109,19 @@ const Sudoku = () => {
       { value: null, default: false, provValues: [] },
     ],
   ]);
-
   const [useIterator, setUseIterator] = useState<boolean>(false);
-
   const [iteratorRound, setIteratorRound] = useState<number>(0);
-
   const [currPosition, setCurrPosition] = useState<SudokuCellPosition>({
     x: 0,
     y: 0,
   });
-
   const [lastAction, setLastAction] = useState<"forward" | "backward">(
     "forward"
   );
 
   const rowsValid = useCallback(
-    (): boolean =>
-      !sudokuMatrix.some((row) => {
+    (matrix: SudokuMatrix = sudokuMatrix): boolean =>
+      !matrix.some((row) => {
         const rowVals: SudokuMatrixCellValue[] = [];
 
         return row.some((cell) => {
@@ -140,63 +136,70 @@ const Sudoku = () => {
     [sudokuMatrix]
   );
 
-  const colsValid = useCallback((): boolean => {
-    for (let x = 0; x < sudokuMatrix.length; x++) {
-      const colVals: SudokuMatrixCellValue[] = [];
+  const colsValid = useCallback(
+    (matrix: SudokuMatrix = sudokuMatrix): boolean => {
+      for (let x = 0; x < matrix.length; x++) {
+        const colVals: SudokuMatrixCellValue[] = [];
 
-      for (let y = 0; y < sudokuMatrix[x].length; y++) {
-        const cell = sudokuMatrix[y][x];
-        if (!cell.value || (cell.value && !colVals.includes(cell.value))) {
-          colVals.push(cell.value);
-        } else {
-          return false;
+        for (let y = 0; y < matrix[x].length; y++) {
+          const cell = matrix[y][x];
+          if (!cell.value || (cell.value && !colVals.includes(cell.value))) {
+            colVals.push(cell.value);
+          } else {
+            return false;
+          }
         }
       }
-    }
 
-    return true;
-  }, [sudokuMatrix]);
+      return true;
+    },
+    [sudokuMatrix]
+  );
 
-  const blocksValid = useCallback((): boolean => {
-    for (let i = 1; i < 4; i++) {
-      for (let a = 1; a < 4; a++) {
-        const blockVals: SudokuMatrixCellValue[] = [];
+  const blocksValid = useCallback(
+    (matrix: SudokuMatrix = sudokuMatrix): boolean => {
+      for (let i = 1; i < 4; i++) {
+        for (let a = 1; a < 4; a++) {
+          const blockVals: SudokuMatrixCellValue[] = [];
 
-        for (let e = 0; e < 3; e++) {
-          for (let u = 0; u < 3; u++) {
-            if (
-              !sudokuMatrix[e][u].value ||
-              (sudokuMatrix[e][u].value &&
-                !blockVals.includes(sudokuMatrix[e][u].value))
-            ) {
-              blockVals.push(sudokuMatrix[e][u].value);
-            } else {
-              return false;
+          for (let e = 0; e < 3; e++) {
+            for (let u = 0; u < 3; u++) {
+              if (
+                !matrix[e][u].value ||
+                (matrix[e][u].value && !blockVals.includes(matrix[e][u].value))
+              ) {
+                blockVals.push(matrix[e][u].value);
+              } else {
+                return false;
+              }
             }
           }
         }
       }
-    }
 
-    return true;
-  }, [sudokuMatrix]);
+      return true;
+    },
+    [sudokuMatrix]
+  );
 
   const isValid = useCallback(
-    (): boolean => rowsValid() && colsValid() && blocksValid(),
-    [blocksValid, colsValid, rowsValid]
+    (matrix: SudokuMatrix = sudokuMatrix): boolean =>
+      rowsValid(matrix) && colsValid(matrix) && blocksValid(matrix),
+    [blocksValid, colsValid, rowsValid, sudokuMatrix]
   );
 
   const isComplete = useCallback(
-    (): boolean =>
-      sudokuMatrix.every((row) => {
+    (matrix: SudokuMatrix = sudokuMatrix): boolean =>
+      matrix.every((row) => {
         return row.every((cell) => cell.value);
       }),
     [sudokuMatrix]
   );
 
   const isSolved = useCallback(
-    (): boolean => isComplete() && isValid(),
-    [isComplete, isValid]
+    (matrix: SudokuMatrix = sudokuMatrix): boolean =>
+      isComplete(matrix) && isValid(matrix),
+    [isComplete, isValid, sudokuMatrix]
   );
 
   const rowValues = useCallback(
@@ -294,142 +297,173 @@ const Sudoku = () => {
     [blockValues, colValues, rowValues]
   );
 
-  const setInitialValues = useCallback((): void => {
-    const provisionalMatrix: SudokuMatrix = [];
+  const setInitialValues = useCallback(
+    (matrix: SudokuMatrix = sudokuMatrix): SudokuMatrix => {
+      const provisionalMatrix: SudokuMatrix = [];
 
-    sudokuMatrix.forEach((row, y) => {
-      row.forEach((cell, x) => {
-        if (cell.default) {
-          if (!provisionalMatrix[y]) {
-            provisionalMatrix[y] = [];
-          }
+      matrix.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          if (cell.default) {
+            if (!provisionalMatrix[y]) {
+              provisionalMatrix[y] = [];
+            }
 
-          provisionalMatrix[y][x] = cell;
-        } else {
-          const possibilities: number[] = getPossibilities({ x, y });
-
-          if (!provisionalMatrix[y]) {
-            provisionalMatrix[y] = [];
-          }
-
-          provisionalMatrix[y][x] = {
-            value: null,
-            provValues: possibilities,
-            default: false,
-          };
-        }
-      });
-    });
-
-    setSudokuMatrix(provisionalMatrix);
-  }, [getPossibilities, sudokuMatrix]);
-
-  // Esto debe en cada iteración establecer el primer valor disponible de la casilla que
-  // toque y comprobar si es válido. Si lo es, se avanza a la siguiente casilla; si no,
-  // se escoge el siguiente número posible de esa casilla. Si no hay más, retrocede a la
-  // anterior y escoge el siguiente número posible. Así hasta resolverlo.
-  const nextRound = useCallback((): void => {
-    const provisionalMatrix: SudokuMatrix = [...sudokuMatrix];
-    let nextCurrPosition: SudokuCellPosition;
-    let nextLastAction: "forward" | "backward";
-
-    // console.log('sudokuMatrix', sudokuMatrix);
-
-    if (!sudokuMatrix[currPosition.y][currPosition.x].default) {
-      if (sudokuMatrix[currPosition.y][currPosition.x].value) {
-        if (isValid() && lastAction === "forward") {
-          // console.log('1 (isValid -> forward)');
-          // Siguiente casilla
-          nextCurrPosition = {
-            x: currPosition.x === 8 ? 0 : currPosition.x + 1,
-            y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
-          };
-
-          nextLastAction = "forward";
-        } else {
-          const newValue: number | undefined =
-            sudokuMatrix[currPosition.y][currPosition.x].provValues[
-              sudokuMatrix[currPosition.y][currPosition.x].provValues.findIndex(
-                (provValue) =>
-                  provValue ===
-                  sudokuMatrix[currPosition.y][currPosition.x].value
-              ) + 1
-            ];
-
-          if (newValue) {
-            // console.log('2 (invalid -> assign new value');
-            provisionalMatrix[currPosition.y][currPosition.x].value = newValue;
-
-            // Misma casilla (debe comprobarse)
-            nextCurrPosition = currPosition;
-            nextLastAction = "forward";
+            provisionalMatrix[y][x] = cell;
           } else {
-            // console.log('3 (invalid -> no more values, backward');
-            // Casilla anterior
+            const possibilities: number[] = getPossibilities({ x, y });
+
+            if (!provisionalMatrix[y]) {
+              provisionalMatrix[y] = [];
+            }
+
+            provisionalMatrix[y][x] = {
+              value: null,
+              provValues: possibilities,
+              default: false,
+            };
+          }
+        });
+      });
+
+      return provisionalMatrix;
+    },
+    [getPossibilities, sudokuMatrix]
+  );
+
+  const nextRound = useCallback(
+    (
+      matrix: SudokuMatrix = sudokuMatrix,
+      currPos: SudokuCellPosition = currPosition,
+      lastAct: "forward" | "backward" = lastAction
+    ): {
+      matrix: SudokuMatrix;
+      currPos: SudokuCellPosition;
+      lastAct: "forward" | "backward";
+    } => {
+      const provisionalMatrix: SudokuMatrix = [...matrix];
+      let nextCurrPosition: SudokuCellPosition;
+      let nextLastAction: "forward" | "backward";
+
+      if (!matrix[currPos.y][currPos.x].default) {
+        if (matrix[currPos.y][currPos.x].value) {
+          if (isValid() && lastAct === "forward") {
+            // console.log('1 (isValid -> forward)');
+            // Siguiente casilla
             nextCurrPosition = {
-              x: currPosition.x === 0 ? 8 : currPosition.x - 1,
-              y: currPosition.x === 0 ? currPosition.y - 1 : currPosition.y,
+              x: currPos.x === 8 ? 0 : currPos.x + 1,
+              y: currPos.x === 8 ? currPos.y + 1 : currPos.y,
             };
 
-            provisionalMatrix[currPosition.y][currPosition.x].value = null;
+            nextLastAction = "forward";
+          } else {
+            const newValue: number | undefined =
+              matrix[currPos.y][currPos.x].provValues[
+                matrix[currPos.y][currPos.x].provValues.findIndex(
+                  (provValue) =>
+                    provValue === matrix[currPos.y][currPos.x].value
+                ) + 1
+              ];
 
-            nextLastAction = "backward";
+            if (newValue) {
+              // console.log('2 (invalid -> assign new value');
+              provisionalMatrix[currPos.y][currPos.x].value = newValue;
+
+              // Misma casilla (debe comprobarse)
+              nextCurrPosition = currPos;
+              nextLastAction = "forward";
+            } else {
+              // console.log('3 (invalid -> no more values, backward');
+              // Casilla anterior
+              nextCurrPosition = {
+                x: currPos.x === 0 ? 8 : currPos.x - 1,
+                y: currPos.x === 0 ? currPos.y - 1 : currPos.y,
+              };
+
+              provisionalMatrix[currPos.y][currPos.x].value = null;
+
+              nextLastAction = "backward";
+            }
           }
+        } else {
+          // Misma casilla (debe comprobarse)
+          provisionalMatrix[currPos.y][currPos.x].value =
+            matrix[currPos.y][currPos.x].provValues[0];
+
+          nextCurrPosition = currPos;
+
+          nextLastAction = "forward";
         }
       } else {
-        // console.log('4 (no value, default assigned)');
-        // Siguiente casilla
-        // nextCurrPosition = {
-        //   x: currPosition.x === 8 ? 0 : currPosition.x + 1,
-        //   y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
-        // };
+        if (lastAct === "forward") {
+          // console.log('5 (default -> forward)');
+          // Siguiente casilla
+          nextCurrPosition = {
+            x: currPos.x === 8 ? 0 : currPos.x + 1,
+            y: currPos.x === 8 ? currPos.y + 1 : currPos.y,
+          };
 
-        // Misma casilla (debe comprobarse)
-        nextCurrPosition = currPosition;
+          nextLastAction = lastAct;
+        } else {
+          // console.log('6 (default <- backward)');
+          // Casilla anterior
+          nextCurrPosition = {
+            x: currPos.x === 0 ? 8 : currPos.x - 1,
+            y: currPos.x === 0 ? currPos.y - 1 : currPos.y,
+          };
 
-        provisionalMatrix[currPosition.y][currPosition.x].value =
-          sudokuMatrix[currPosition.y][currPosition.x].provValues[0];
-
-        nextLastAction = "forward";
+          nextLastAction = lastAct;
+        }
       }
-    } else {
-      // let nextCurrPosition: SudokuCellPosition;
 
-      if (lastAction === "forward") {
-        // console.log('5 (default -> forward)');
-        // Siguiente casilla
-        nextCurrPosition = {
-          x: currPosition.x === 8 ? 0 : currPosition.x + 1,
-          y: currPosition.x === 8 ? currPosition.y + 1 : currPosition.y,
-        };
+      setCurrPosition(nextCurrPosition);
+      setLastAction(nextLastAction);
 
-        nextLastAction = lastAction;
-      } else {
-        // console.log('6 (default <- backward)');
-        // Casilla anterior
-        nextCurrPosition = {
-          x: currPosition.x === 0 ? 8 : currPosition.x - 1,
-          y: currPosition.x === 0 ? currPosition.y - 1 : currPosition.y,
-        };
-
-        nextLastAction = lastAction;
-      }
-    }
-
-    setCurrPosition(nextCurrPosition);
-    setSudokuMatrix(provisionalMatrix);
-    setLastAction(nextLastAction);
-  }, [currPosition, isValid, sudokuMatrix, lastAction]);
+      return {
+        matrix: provisionalMatrix,
+        currPos: nextCurrPosition,
+        lastAct: nextLastAction,
+      };
+    },
+    [currPosition, isValid, sudokuMatrix, lastAction]
+  );
 
   const iterateSudoku = useCallback(() => {
-    if (iteratorRound === 0) {
-      setInitialValues();
-    } else {
-      nextRound();
-    }
+    let iteration = iteratorRound;
+    let matrix: SudokuMatrix = [...sudokuMatrix];
+    let currPos: SudokuCellPosition = currPosition;
+    let lastAct: "forward" | "backward" = lastAction;
 
-    setIteratorRound(iteratorRound + 1);
-  }, [iteratorRound, setInitialValues, nextRound]);
+    console.log('Still iterating')
+
+    const doIterate = () => {
+      if (iteration === 0) {
+        matrix = setInitialValues(matrix);
+        iteration++;
+      } else {
+        const newVal = nextRound(matrix, currPos, lastAct);
+        matrix = newVal.matrix;
+        currPos = newVal.currPos;
+        lastAct = newVal.lastAct;
+        iteration++;
+      }
+    };
+
+    if (!isSolved(matrix)) {
+      doIterate();
+      setCurrPosition(currPos);
+      setLastAction(lastAct);
+      setIteratorRound(iteration);
+      setSudokuMatrix(matrix);
+    }
+  }, [
+    iteratorRound,
+    setInitialValues,
+    nextRound,
+    sudokuMatrix,
+    isSolved,
+    currPosition,
+    lastAction,
+  ]);
 
   const solveSudoku = (): void => setUseIterator(true);
 
@@ -438,7 +472,7 @@ const Sudoku = () => {
 
     if (useIterator) {
       timeout = setTimeout(() => {
-        if (!isSolved()) iterateSudoku();
+        iterateSudoku();
       }, 0);
     }
 
