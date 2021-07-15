@@ -6,6 +6,7 @@ import {
   SudokuMatrix,
   SudokuMatrixCellValue,
 } from "../../types";
+import { log } from "../../helpers";
 
 const Sudoku = () => {
   const [sudokuMatrix, setSudokuMatrix] = useState<SudokuMatrix>([
@@ -347,7 +348,8 @@ const Sudoku = () => {
       if (!matrix[currPos.y][currPos.x].default) {
         if (matrix[currPos.y][currPos.x].value) {
           if (isValid() && lastAct === "forward") {
-            // console.log('1 (isValid -> forward)');
+            log("1 (isValid -> forward)");
+
             // Siguiente casilla
             nextCurrPosition = {
               x: currPos.x === 8 ? 0 : currPos.x + 1,
@@ -365,14 +367,16 @@ const Sudoku = () => {
               ];
 
             if (newValue) {
-              // console.log('2 (invalid -> assign new value');
+              log("2 (invalid -> assign new value");
+
               provisionalMatrix[currPos.y][currPos.x].value = newValue;
 
               // Misma casilla (debe comprobarse)
               nextCurrPosition = currPos;
               nextLastAction = "forward";
             } else {
-              // console.log('3 (invalid -> no more values, backward');
+              log("3 (invalid -> no more values, backward");
+
               // Casilla anterior
               nextCurrPosition = {
                 x: currPos.x === 0 ? 8 : currPos.x - 1,
@@ -385,6 +389,8 @@ const Sudoku = () => {
             }
           }
         } else {
+          log("4 (no value, default assigned)");
+
           // Misma casilla (debe comprobarse)
           provisionalMatrix[currPos.y][currPos.x].value =
             matrix[currPos.y][currPos.x].provValues[0];
@@ -395,7 +401,8 @@ const Sudoku = () => {
         }
       } else {
         if (lastAct === "forward") {
-          // console.log('5 (default -> forward)');
+          log("5 (default -> forward)");
+
           // Siguiente casilla
           nextCurrPosition = {
             x: currPos.x === 8 ? 0 : currPos.x + 1,
@@ -404,7 +411,8 @@ const Sudoku = () => {
 
           nextLastAction = lastAct;
         } else {
-          // console.log('6 (default <- backward)');
+          log("6 (default <- backward)");
+
           // Casilla anterior
           nextCurrPosition = {
             x: currPos.x === 0 ? 8 : currPos.x - 1,
@@ -432,8 +440,6 @@ const Sudoku = () => {
     let matrix: SudokuMatrix = [...sudokuMatrix];
     let currPos: SudokuCellPosition = currPosition;
     let lastAct: "forward" | "backward" = lastAction;
-
-    console.log('Still iterating')
 
     const doIterate = () => {
       if (iteration === 0) {
@@ -523,7 +529,7 @@ const Sudoku = () => {
         &nbsp;
         <button onClick={() => setUseIterator(false)}>Stop iterator</button>
         &nbsp;
-        <button onClick={() => console.log(rowsValid())}>Check</button>
+        <button onClick={() => log(rowsValid())}>Check</button>
       </span>
     </>
   );
